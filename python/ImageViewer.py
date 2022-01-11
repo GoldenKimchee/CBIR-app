@@ -4,10 +4,7 @@
 # Show the image with:
 # os.startfile(imageList[n].filename)
 
-
-
-
-from Tkinter import *
+from tkinter import *
 import math, os
 from PixInfo import PixInfo
 
@@ -87,12 +84,12 @@ class ImageViewer(Frame):
         
         self.b1 = Button(controlFrame, text="Color-Code", 
             padx = 10, width=10, 
-            command=lambda: self.find_distance(method='CC'))
+            command=lambda: self.find_distance(method='color_code_method'))
         self.b1.grid(row=1, sticky=E)
         
         b2 = Button(controlFrame, text="Intensity", 
             padx = 10, width=10, 
-            command=lambda: self.find_distance(method='inten'))
+            command=lambda: self.find_distance(method='intensity_method'))
         b2.grid(row=2, sticky=E)
         
         self.resultLbl = Label(controlFrame, text="Results:")
@@ -118,9 +115,26 @@ class ImageViewer(Frame):
     # directory uses the comparison method of the passed 
     # binList
     def find_distance(self, method):
-        
+        pass
 	#your code    
+ 
+    # Intensity method 
+    # Formula: I = 0.299R + 0.587G + 0.114B 
+    # 24-bit of RGB (8 bits for each color channel) color 
+    # intensities are transformed into a single 8-bit value. 
+    # There are 24 histogram bins.
+    def intensity_method(self):
+        pass
     
+    
+    # Color-Code Method 
+    # 24-bit of RGB color intensities transformed into 6-bit color
+    # code from the first 2 bits of each of the three colors. 
+    # There are 64 histogram bins. 
+    def color_code_method(self):
+        pass
+        
+      
     # Update the results window with the sorted results.
     def update_results(self, sortedTup):
         
