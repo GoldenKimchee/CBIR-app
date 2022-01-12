@@ -94,8 +94,18 @@ class PixInfo:
 	# 24-bit of RGB color intensities transformed into 6-bit color
 	# code from the first 2 bits of each of the three colors. 
 	# There are 64 histogram bins. 
-	def color_code_method(self, CcBins):
-		pass
+	def color_code_method(self, pix, CcBins):
+		width, height = pix.size  
+		for y in range(height): 
+			for x in range(width):  
+				r, g, b = pix[x, y]  	
+				r = self.first_two_nums( self.decimal_to_binary(r) )  # get binary representation, then 
+				g = self.first_two_nums( self.decimal_to_binary(g) )  # get the first two significant numbers
+				b = self.first_two_nums( self.decimal_to_binary(b) )
+				color_code = r + g + b
+				bin = self.binary_to_decimal(color_code)
+				CcBins[bin] += 1  # allocate pixel to corresponding bin
+		return CcBins
 
 
 	# Function to convert decimal number to binary using recursion
@@ -103,6 +113,29 @@ class PixInfo:
 		if num >= 1:
 			self.decimal_to_binary(num // 2)
 		return num % 2
+
+	
+	# Turns a binary number to a decimal
+	def binary_to_decimal(binary):
+		decimal, i = 0, 0
+		while binary != 0:
+			result = binary % 10
+			decimal = decimal + result * pow(2, i)
+			binary = binary // 10
+			i += 1
+		return decimal
+
+
+	# Gets the first two significant digits of the binary. 
+	# If the two digits are less than 10, makes sure that 
+	# the 0 is retained to get the correct 6 bit color code.
+	def first_two_nums(self, num):
+		first_two = num // 1000000
+		if first_two == 0:
+			first_two = "00"
+		elif first_two < 10:
+			first_two = "0" + str(first_two)
+		return str(first_two)
 
 	# Accessor functions:
 	def get_imageList(self):
