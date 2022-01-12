@@ -115,23 +115,7 @@ class ImageViewer(Frame):
     # directory uses the comparison method of the passed 
     # binList
     def find_distance(self, method):
-        pass
-	#your code    
- 
-    # Intensity method 
-    # Formula: I = 0.299R + 0.587G + 0.114B 
-    # 24-bit of RGB (8 bits for each color channel) color 
-    # intensities are transformed into a single 8-bit value. 
-    # There are 24 histogram bins.
-    def intensity_method(self):
-        pass
-    
-    
-    # Color-Code Method 
-    # 24-bit of RGB color intensities transformed into 6-bit color
-    # code from the first 2 bits of each of the three colors. 
-    # There are 64 histogram bins. 
-    def color_code_method(self):
+	    #your code    
         pass
         
       
