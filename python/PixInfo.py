@@ -60,11 +60,11 @@ class PixInfo:
 			
 		# 2D array initilazation for bins, initialized
 		# to zero.
-		CcBins = [0]*64
+		CcBins = [0]*64  # Stores histogram bins. index 0 -> bin 1, index 1 -> bin2, ... index 24 -> bin 25
 		InBins = [0]*25
 		
-		self.intensity_method(pixlist, CcBins)
-		self.color_code_method(pixlist, InBins)            
+		InBins = self.intensity_method(pixlist, InBins)
+		CcBins = self.color_code_method(pixlist, CcBins)            
 		#your code
 		
 		# Return the list of binary digits, one digit for each
@@ -77,19 +77,24 @@ class PixInfo:
 	# 24-bit of RGB (8 bits for each color channel) color 
 	# intensities are transformed into a single 8-bit value. 
 	# There are 24 histogram bins.
-	def intensity_method(self, pix, CcBins):
-		width, height = pix.size
+	def intensity_method(self, pix, InBins):
+		width, height = pix.size  
 		for y in range(height): # reads pixels left to right, top down (by each row).
 			for x in range(width): # This example code reads the RGB (red, green, blue) values 
 				r, g, b = pix[x, y]  # in every pixel of a 'x' pixel wide 'y' pixel tall image.	
 				intensity = (0.299*r) + (0.587*g) + (0.114*b)
+				bin = intensity // 10  # Division rounds down to bin number.. in this case bins will range 0-24 (25 bins)
+				if bin == 25:  # last bin is 240 to 255, so bin of 24 and 25 will correspond to bin 24
+					bin = 24
+				InBins[bin] += 1  # allocate pixel to corresponding bin
+		return InBins
 		
 	
 	# Color-Code Method 
 	# 24-bit of RGB color intensities transformed into 6-bit color
 	# code from the first 2 bits of each of the three colors. 
 	# There are 64 histogram bins. 
-	def color_code_method(self, InBins):
+	def color_code_method(self, CcBins):
 		pass
 
 
