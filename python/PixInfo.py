@@ -17,6 +17,7 @@ class PixInfo:
 		self.ymax = 0
 		self.colorCode = []
 		self.intenCode = []
+		self.binary_cache = dict()
 			
 		# Add each image (for evaluation) into a list, 
 		# and a Photo from the image (for the GUI) in a list.
@@ -124,12 +125,16 @@ class PixInfo:
 	
 	# Turns a binary number to a decimal
 	def binary_to_decimal(self, binary):
-		decimal, i = 0, 0
-		while binary != 0:
-			result = binary % 10
-			decimal = decimal + result * pow(2, i)
-			binary = binary // 10
-			i += 1
+		if binary in self.binary_cache.keys():
+			return self.binary_cache[binary]
+		else:
+			decimal, i = 0, 0
+			while binary != 0:
+				result = binary % 10
+				decimal = decimal + result * pow(2, i)
+				binary = binary // 10
+				i += 1
+			self.binary_cache[binary] = decimal
 		return decimal
 
 
