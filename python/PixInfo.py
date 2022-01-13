@@ -1,6 +1,5 @@
 # PixInfo.py
 # Program to start evaluating an image in python
-
 from PIL import Image, ImageTk
 import glob, os, math
 
@@ -28,8 +27,8 @@ class PixInfo:
 			
 			# Resize the image for thumbnails.
 			imSize = im.size
-			x = imSize[0]/4
-			y = imSize[1]/4
+			x = int(imSize[0]/4)
+			y = int(imSize[1]/4)
 			imResize = im.resize((x, y), Image.ANTIALIAS)
 			photo = ImageTk.PhotoImage(imResize)
 					
@@ -46,14 +45,16 @@ class PixInfo:
 		# Create a list of pixel data for each image and add it
 		# to a list.
 		for im in self.imageList[:]:
+			print("processing")
 			width, height = im.size
 
 			# Get histogram bins for each method.
 			CcBins, InBins = self.encode(im, width, height)
-   
+			print(CcBins)
+			print(InBins)
 			self.colorCode.append(CcBins)
 			self.intenCode.append(InBins)
-						
+		print("done processing")				
 
 	# Bin function returns an array of bins for each 
 	# image, both Intensity and Color-Code methods.
@@ -84,7 +85,7 @@ class PixInfo:
        
 				r, g, b = im.getpixel((x, y))  # in every pixel of a 'x' pixel wide 'y' pixel tall image.	
 				intensity = (0.299*r) + (0.587*g) + (0.114*b)
-				bin = (intensity + 10) // 10  # Division rounds down to bin number.. in this case bins will range 0-24 (25 bins).
+				bin = int((intensity + 10) // 10)  # Division rounds down to bin number.. in this case bins will range 0-24 (25 bins).
     
 				if bin == 26:  # last bin is 240 to 255, so bin of 24 and 25 will 
 					bin = 25   # correspond to bin 24, BUT +1 since first index stores total pixels.
@@ -110,7 +111,7 @@ class PixInfo:
 				b = self.first_two_nums( self.decimal_to_binary(b) )
     
 				color_code = r + g + b
-				bin = self.binary_to_decimal(color_code)
+				bin = self.binary_to_decimal(int(color_code))
 				CcBins[bin + 1] += 1  # allocate pixel to corresponding bin, +1 since first index stores total pixels
     
 		return CcBins
@@ -118,13 +119,11 @@ class PixInfo:
 
 	# Function to convert decimal number to binary using recursion
 	def decimal_to_binary(self, num):
-		if num >= 1:
-			self.decimal_to_binary(num // 2)
-		return num % 2
+		return bin(num).replace("0b", "")
 
 	
 	# Turns a binary number to a decimal
-	def binary_to_decimal(binary):
+	def binary_to_decimal(self, binary):
 		decimal, i = 0, 0
 		while binary != 0:
 			result = binary % 10
@@ -138,12 +137,11 @@ class PixInfo:
 	# If the two digits are less than 10, makes sure that 
 	# the 0 is retained to get the correct 6 bit color code.
 	def first_two_nums(self, num):
-		first_two = num // 1000000
-		if first_two == 0:
-			first_two = "00"
-		elif first_two < 10:
-			first_two = "0" + str(first_two)
-		return str(first_two)
+		num_str = str(num)
+		if len(num_str) <= 1:
+			num_str += "0"
+		first_two = num_str[:2]
+		return first_two
 
 	# Accessor functions:
 	def get_imageList(self):
