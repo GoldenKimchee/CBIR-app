@@ -2,173 +2,292 @@
 # Program to start evaluating an image in python
 #
 # Show the image with:
-# os.startfile(imageList[n].filename)
+#os.startfile(imageList[n].filename)
 
 from tkinter import *
 import math, os
 from PixInfo import PixInfo
-
+import operator
 
 # Main app.
 class ImageViewer(Frame):
-    
+
     # Constructor.
     def __init__(self, master, pixInfo, resultWin):
-        
+
         Frame.__init__(self, master)
+        self.chosen_image = " "
         self.master    = master
         self.pixInfo   = pixInfo
         self.resultWin = resultWin
+        self.image_sizes = self.pixInfo.get_image_sizes()
+
+        # self.colorCode and self.intenCode are lists of bins
+        # for each photo.
+        # For example, self.colorCode[0] is the color code bin
+        # for the first image
         self.colorCode = pixInfo.get_colorCode()
         self.intenCode = pixInfo.get_intenCode()
+
         # Full-sized images.
         self.imageList = pixInfo.get_imageList()
+
+        # file names of images
+        self.fileList = pixInfo.get_file_list()
+
         # Thumbnail sized images.
         self.photoList = pixInfo.get_photoList()
+
         # Image size for formatting.
         self.xmax = pixInfo.get_xmax()
         self.ymax = pixInfo.get_ymax()
-        
-        
+
         # Create Main frame.
         mainFrame = Frame(master)
         mainFrame.pack()
-        
-        
+
+
         # Create Picture chooser frame.
         listFrame = Frame(mainFrame)
         listFrame.pack(side=LEFT)
-        
-        
+
+
         # Create Control frame.
         controlFrame = Frame(mainFrame)
         controlFrame.pack(side=RIGHT)
-        
-        
+
+
         # Create Preview frame.
-        previewFrame = Frame(mainFrame, 
+        previewFrame = Frame(mainFrame,
             width=self.xmax+45, height=self.ymax)
         previewFrame.pack_propagate(0)
         previewFrame.pack(side=RIGHT)
-        
-        
+
+
         # Create Results frame.
         resultsFrame = Frame(self.resultWin)
         resultsFrame.pack(side=BOTTOM)
         self.canvas = Canvas(resultsFrame)
         self.resultsScrollbar = Scrollbar(resultsFrame)
         self.resultsScrollbar.pack(side=RIGHT, fill=Y)
-        
-        
+
+
         # Layout Picture Listbox.
         self.listScrollbar = Scrollbar(listFrame)
         self.listScrollbar.pack(side=RIGHT, fill=Y)
-        self.list = Listbox(listFrame, 
-            yscrollcommand=self.listScrollbar.set, 
-            selectmode=BROWSE, 
+        self.list = Listbox(listFrame,
+            yscrollcommand=self.listScrollbar.set,
+            selectmode=BROWSE,
             height=10)
         for i in range(len(self.imageList)):
-            self.list.insert(i, self.imageList[i].filename)
+            self.list.insert(i, "Image " + str(i + 1))
         self.list.pack(side=LEFT, fill=BOTH)
         self.list.activate(1)
         self.list.bind('<<ListboxSelect>>', self.update_preview)
         self.listScrollbar.config(command=self.list.yview)
-        
-        
+
+
         # Layout Controls.
-        button = Button(controlFrame, text="Inspect Pic", 
-            fg="red", padx = 10, width=10, 
-            command=lambda: self.inspect_pic(
-                self.list.get(ACTIVE)))
-        button.grid(row=0, sticky=E)
-        
-        self.b1 = Button(controlFrame, text="Color-Code", 
-            padx = 10, width=10, 
+
+        self.b1 = Button(controlFrame, text="Color-Code",
+            padx = 10, width=10,
             command=lambda: self.find_distance(method='color_code_method'))
         self.b1.grid(row=1, sticky=E)
-        
-        b2 = Button(controlFrame, text="Intensity", 
-            padx = 10, width=10, 
+
+        b2 = Button(controlFrame, text="Intensity",
+            padx = 10, width=10,
             command=lambda: self.find_distance(method='intensity_method'))
         b2.grid(row=2, sticky=E)
-        
-        self.resultLbl = Label(controlFrame, text="Results:")
-        self.resultLbl.grid(row=3, sticky=W)
-        
-        
+
         # Layout Preview.
-        self.selectImg = Label(previewFrame, 
+        self.selectImg = Label(previewFrame,
             image=self.photoList[0])
         self.selectImg.pack()
-    
-    
-    # Event "listener" for listbox change.
-    def update_preview(self, event):
-    
-        i = self.list.curselection()[0]
-        self.selectImg.configure(
-            image=self.photoList[int(i)])
-    
-    
-    # Find the Manhattan Distance of each image and return a
-    # list of distances between image i and each image in the
-    # directory uses the comparison method of the passed 
-    # binList
-    def find_distance(self, method):
-	    #your code    
-        pass
-        
-      
-    # Update the results window with the sorted results.
-    def update_results(self, sortedTup):
-        
-        cols = int(math.ceil(math.sqrt(len(sortedTup))))
-        fullsize = (0, 0, (self.xmax*cols), (self.ymax*cols))
-        
-        # Initialize the canvas with dimensions equal to the 
+
+        # Initialize the canvas with dimensions equal to the
         # number of results.
+        fullsize = (0, 0, (self.xmax*50), (self.ymax*50))
         self.canvas.delete(ALL)
-        self.canvas.config( 
-            width=self.xmax*cols, 
-            height=self.ymax*cols/2, 
+        self.canvas.config(
+            width=self.xmax*50,
+            height=self.ymax*50/2,
             yscrollcommand=self.resultsScrollbar.set,
             scrollregion=fullsize)
         self.canvas.pack()
         self.resultsScrollbar.config(command=self.canvas.yview)
-        
+
+        # array of tuples
+        self.page_images = [None] * 5
+
+        # buttons for the pages
+        page1_button = Button(resultsFrame, text="Page 1",
+            padx = 10, width=10,
+            command=lambda: self.update_results(sortedTup=self.page_images[0], page_num=1))
+        page1_button.pack(side=LEFT)
+
+        page2_button = Button(resultsFrame, text="Page 2",
+            padx = 10, width=10,
+            command=lambda: self.update_results(sortedTup=self.page_images[1], page_num=2))
+        page2_button.pack(side=LEFT)
+
+        page3_button = Button(resultsFrame, text="Page 3",
+            padx = 10, width=10,
+            command=lambda: self.update_results(sortedTup=self.page_images[2], page_num=3))
+        page3_button.pack(side=LEFT)
+
+        page4_button = Button(resultsFrame, text="Page 4",
+            padx = 10, width=10,
+            command=lambda: self.update_results(sortedTup=self.page_images[3], page_num=4))
+        page4_button.pack(side=LEFT)
+
+        page5_button = Button(resultsFrame, text="Page 5",
+            padx = 10, width=10,
+            command=lambda: self.update_results(sortedTup=self.page_images[4], page_num=5))
+        page5_button.pack(side=LEFT)
+
+
+    # Event "listener" for listbox change.
+    def update_preview(self, event):
+
+        i = self.list.curselection()[0]
+        self.chosen_image = self.photoList[int(i)]
+        self.selectImg.configure(
+            image=self.chosen_image)
+
+
+    # Find the Manhattan Distance of each image and return a
+    # list of distances between image i and each image in the
+    # directory uses, the comparison method of the passed
+    # binList
+
+    # the "method" argument can have one of the two following values(as strings):
+    # color_code_method
+    # intensity_method
+    def find_distance(self, method):
+        #your code
+
+        # "chosen_image_index" is the index of the chosen image in the
+        # image list
+        chosen_image_index = int(str(self.chosen_image)[7:]) - 1
+
+        bins_to_compare = []
+        if method == "color_code_method":
+            bins_to_compare = self.colorCode
+        elif method == "intensity_method":
+            bins_to_compare = self.intenCode
+
+        #print("bins to compare: " + str(bins_to_compare))
+
+        # now apply the manhattan distance technique,
+        # compute the distance between the chosen index image
+        # and all other images
+        chosen_image_bin = bins_to_compare[chosen_image_index]
+
+        #print("chosen image bin: " + str(chosen_image_bin))
+        image_info = []
+        for i in range(len(bins_to_compare)):
+
+            other_image_bin = bins_to_compare[i]
+            other_image_img = self.photoList[i]
+            other_image_file = self.fileList[i]
+
+            manhattan_distance = 0
+
+            if (i != chosen_image_index):
+                chosen_image_size = self.image_sizes[chosen_image_index]
+                other_image_size = self.image_sizes[i]
+
+                # iterate through the items in each bin
+                for j in range(1, len(chosen_image_bin)):
+                    chosen_image_bin_value = chosen_image_bin[j]
+                    other_image_bin_value = other_image_bin[j]
+
+                    manhattan_distance += abs(chosen_image_bin_value / chosen_image_size
+                    - other_image_bin_value / other_image_size)
+
+            # tuple of the form (image, image file name, manhattan distance)
+            info = (other_image_img, other_image_file, manhattan_distance)
+
+            image_info.append(info)
+
+        # sort the image info by their manhattan distances
+        image_info.sort(key=lambda x: x[2])
+        self.put_sorted_images_in_pages_array(image_info)
+        self.update_results(self.page_images[0], 1)
+
+        return image_info
+
+    # places image info(image file name, image) into the page buckets that they belong to
+    # in "self.page_images"
+    def put_sorted_images_in_pages_array(self, image_info):
+
+        curr_index = 0
+        for i in range(0, 5):
+            page_image_info = []
+            for j in range(0, 20):
+                page_image_info.append(image_info[curr_index])
+                curr_index += 1
+            self.page_images[i] = (page_image_info)
+
+
+    # Update the results window with the sorted results.
+    def update_results(self, sortedTup, page_num):
+
+        cols = int(math.ceil(math.sqrt(len(sortedTup))))
+        fullsize = (0, 0, (self.xmax*cols), (self.ymax*cols))
+
+        # Initialize the canvas with dimensions equal to the
+        # number of results.
+        self.canvas.delete(ALL)
+        self.canvas.config(
+            width=self.xmax*cols,
+            height=self.ymax*cols/2,
+            yscrollcommand=self.resultsScrollbar.set,
+            scrollregion=fullsize)
+        self.canvas.pack()
+        self.resultsScrollbar.config(command=self.canvas.yview)
+        self.canvas.create_text(100,10,fill="darkblue",font="Times 20 italic bold",
+                        text="Page " + str(page_num))
+
         # your code
-        
-        
+        # photo remain is the list of photos to be placed
+        # each item in "photoRemain" is a tuple of the form
+        # (filename, img)
+        photoRemain = []
+
+        for photo_item in sortedTup:
+            photo_file_name = photo_item[1]
+            photo_image = photo_item[0]
+            photoRemain.append((photo_file_name, photo_image))
+
         # Place images on buttons, then on the canvas in order
         # by distance.  Buttons envoke the inspect_pic method.
         rowPos = 0
         while photoRemain:
-            
+
             photoRow = photoRemain[:cols]
             photoRemain = photoRemain[cols:]
             colPos = 0
             for (filename, img) in photoRow:
-                
+
                 link = Button(self.canvas, image=img)
                 handler = lambda f=filename: self.inspect_pic(f)
                 link.config(command=handler)
                 link.pack(side=LEFT, expand=YES)
                 self.canvas.create_window(
-                    colPos, 
-                    rowPos, 
+                    colPos,
+                    rowPos,
                     anchor=NW,
-                    window=link, 
-                    width=self.xmax, 
+                    window=link,
+                    width=self.xmax,
                     height=self.ymax)
                 colPos += self.xmax
-                
+
             rowPos += self.ymax
-    
-    
+
     # Open the picture with the default operating system image
     # viewer.
     def inspect_pic(self, filename):
-        
         os.startfile(filename)
 
 
@@ -181,6 +300,7 @@ if __name__ == '__main__':
     resultWin = Toplevel(root)
     resultWin.title('Result Viewer')
     resultWin.protocol('WM_DELETE_WINDOW', lambda: None)
+    resultWin.geometry("500x350")
 
     pixInfo = PixInfo(root)
 
