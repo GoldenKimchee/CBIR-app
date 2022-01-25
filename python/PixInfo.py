@@ -50,13 +50,10 @@ class PixInfo:
 		# Create a list of pixel data for each image and add it
 		# to a list.
 		for image in self.imageList[:]:
-			print("processing")
 			width, height = image.size
 
 			# Get histogram bins for each method.
 			CcBins, InBins = self.encode(image, width, height)
-			# print(CcBins)
-			# print(InBins)
 			self.colorCode.append(CcBins)
 			self.intenCode.append(InBins)
 
