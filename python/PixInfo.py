@@ -60,13 +60,6 @@ class PixInfo:
 			self.colorCode.append(CcBins)
 			self.intenCode.append(InBins)
 
-		print("done processing, now have the intensity and color code bins")
-
-
-
-
-
-
 
 	# Bin function returns an array of bins for the image(given as an argument),
 	# both Intensity and Color-Code methods.
@@ -137,9 +130,6 @@ class PixInfo:
 		zeroes = 8 - len(num)
 		return ("0" * zeroes) + num
 
-
-	def decimal_to_binary(self, num):
-		return bin(num).replace("0b", "")
 
 	# Function to convert decimal number to binary using recursion
 	def decimal_to_binary(self, num):
