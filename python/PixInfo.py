@@ -9,7 +9,6 @@ class PixInfo:
 
 	# Constructor.
 	def __init__(self, master):
-
 		self.master = master
 		self.imageList = []
 		self.photoList = []
@@ -20,6 +19,7 @@ class PixInfo:
 		self.intenCode = []
 		self.fileList = []
 		self.binary_cache = dict()
+		self.color_cache = dict()
 
 		# Add each image (for evaluation) into a list,
 		# and a Photo from the image (for the GUI) in a list.
@@ -116,7 +116,11 @@ class PixInfo:
 				b = self.first_two_nums( eight_b )
 
 				color_code = r + g + b
-				bin = self.binary_to_decimal(color_code)
+				if color_code in self.color_cache:
+					bin = self.color_cache[color_code]
+				else:	
+					bin = self.binary_to_decimal(color_code)
+					self.color_cache[color_code] = bin
 				CcBins[bin + 1] += 1  # allocate pixel to corresponding bin, +1 since first index stores total pixels
 
 		return CcBins
@@ -135,11 +139,10 @@ class PixInfo:
 
 	# Turns a binary string to a decimal int
 	def binary_to_decimal(self, binary):
-		if binary in self.binary_cache.keys():
+		if binary in self.binary_cache:
 			return self.binary_cache[binary]
-		else:
-			decimal = int(binary, 2)
-			self.binary_cache[binary] = decimal
+		decimal = int(binary, 2)
+		self.binary_cache[binary] = decimal
 		return decimal
 
 	# Gets the first two significant digits of the binary.

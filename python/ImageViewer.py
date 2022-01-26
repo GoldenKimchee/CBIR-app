@@ -21,6 +21,7 @@ class ImageViewer(Frame):
         self.pixInfo   = pixInfo
         self.resultWin = resultWin
         self.image_sizes = self.pixInfo.get_image_sizes()
+        self.check_var = 0
 
         # self.colorCode and self.intenCode are lists of bins
         # for each photo.
@@ -88,21 +89,31 @@ class ImageViewer(Frame):
 
 
         # Layout Controls.
-
         self.b1 = Button(controlFrame, text="Color-Code",
             padx = 10, width=10,
             command=lambda: self.find_distance(method='color_code_method'))
-        self.b1.grid(row=1, sticky=E)
+        self.b1.grid(row=1, sticky=EW)
 
         b2 = Button(controlFrame, text="Intensity",
             padx = 10, width=10,
             command=lambda: self.find_distance(method='intensity_method'))
-        b2.grid(row=2, sticky=E)
+        b2.grid(row=2, sticky=EW)
 
+        
+        b3 = Button(controlFrame, text="Color code & Intensity",
+            padx = 10, width=20,
+            command=lambda: self.find_distance(method='cc_and_i'))
+        b3.grid(row=3, sticky=EW)
+        
+        relevance_check = Checkbutton(controlFrame, 
+                                      text='Relevance', 
+                                      variable=self.check_var)
+        relevance_check.grid(row=4, sticky=W)
+        
         # Layout Preview.
         self.selectImg = Label(previewFrame,
             image=self.photoList[0])
-        self.selectImg.pack()
+        self.selectImg.pack(fill='both')
 
         # Initialize the canvas with dimensions equal to the
         # number of results.
