@@ -156,7 +156,7 @@ class ImageViewer(Frame):
         self.update_results()
         
     def next_page(self):
-        if self.current_page < 5: # change hard-coded 6 to be len(imgs/# of imgs per page) later..
+        if self.current_page < 4: # change hard-coded 6 to be len(imgs/# of imgs per page) later..
             self.current_page += 1
         self.update_results()
         
@@ -271,7 +271,6 @@ class ImageViewer(Frame):
             photoRemain = photoRemain[cols:]
             colPos = 0
             for (filename, img) in photoRow:
-
                 link = Button(self.canvas, image=img)
                 handler = lambda f=filename: self.inspect_pic(f)
                 link.config(command=handler)
