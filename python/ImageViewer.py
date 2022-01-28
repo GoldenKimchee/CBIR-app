@@ -22,6 +22,7 @@ class ImageViewer(Frame):
         self.resultWin = resultWin
         self.image_sizes = self.pixInfo.get_image_sizes()
         self.check_var = 0
+        self.current_page = 0
 
         # self.colorCode and self.intenCode are lists of bins
         # for each photo.
@@ -98,7 +99,6 @@ class ImageViewer(Frame):
             padx = 10, width=10,
             command=lambda: self.find_distance(method='intensity_method'))
         b2.grid(row=2, sticky=EW)
-
         
         b3 = Button(controlFrame, text="Color code & Intensity",
             padx = 10, width=20,
@@ -131,30 +131,15 @@ class ImageViewer(Frame):
         self.page_images = [None] * 5
 
         # buttons for the pages
-        page1_button = Button(resultsFrame, text="Page 1",
+        previous_button = Button(resultsFrame, text="Previous page",
             padx = 10, width=10,
-            command=lambda: self.update_results(sortedTup=self.page_images[0], page_num=1))
-        page1_button.pack(side=LEFT)
+            command=lambda: self.previous_page())
+        previous_button.pack(side=LEFT)
 
-        page2_button = Button(resultsFrame, text="Page 2",
+        next_button = Button(resultsFrame, text="Next page",
             padx = 10, width=10,
-            command=lambda: self.update_results(sortedTup=self.page_images[1], page_num=2))
-        page2_button.pack(side=LEFT)
-
-        page3_button = Button(resultsFrame, text="Page 3",
-            padx = 10, width=10,
-            command=lambda: self.update_results(sortedTup=self.page_images[2], page_num=3))
-        page3_button.pack(side=LEFT)
-
-        page4_button = Button(resultsFrame, text="Page 4",
-            padx = 10, width=10,
-            command=lambda: self.update_results(sortedTup=self.page_images[3], page_num=4))
-        page4_button.pack(side=LEFT)
-
-        page5_button = Button(resultsFrame, text="Page 5",
-            padx = 10, width=10,
-            command=lambda: self.update_results(sortedTup=self.page_images[4], page_num=5))
-        page5_button.pack(side=LEFT)
+            command=lambda: self.next_page())
+        next_button.pack(side=RIGHT)
 
 
     # Event "listener" for listbox change.
@@ -165,7 +150,16 @@ class ImageViewer(Frame):
         self.selectImg.configure(
             image=self.chosen_image)
 
-
+    def previous_page(self):
+        if self.current_page > 0:
+            self.current_page -= 1
+        self.update_results()
+        
+    def next_page(self):
+        if self.current_page < 5: # change hard-coded 6 to be len(imgs/# of imgs per page) later..
+            self.current_page += 1
+        self.update_results()
+        
     # Find the Manhattan Distance of each image and return a
     # list of distances between image i and each image in the
     # directory uses, the comparison method of the passed
@@ -175,8 +169,6 @@ class ImageViewer(Frame):
     # color_code_method
     # intensity_method
     def find_distance(self, method):
-        #your code
-
         # "chosen_image_index" is the index of the chosen image in the
         # image list
         chosen_image_index = int(str(self.chosen_image)[7:]) - 1
@@ -224,7 +216,7 @@ class ImageViewer(Frame):
         # sort the image info by their manhattan distances
         image_info.sort(key=lambda x: x[2])
         self.put_sorted_images_in_pages_array(image_info)
-        self.update_results(self.page_images[0], 1)
+        self.update_results()
 
         return image_info
 
@@ -242,9 +234,9 @@ class ImageViewer(Frame):
 
 
     # Update the results window with the sorted results.
-    def update_results(self, sortedTup, page_num):
+    def update_results(self):
 
-        cols = int(math.ceil(math.sqrt(len(sortedTup))))
+        cols = int(math.ceil(math.sqrt(len(self.page_images[self.current_page]))))
         fullsize = (0, 0, (self.xmax*cols), (self.ymax*cols))
 
         # Initialize the canvas with dimensions equal to the
@@ -258,15 +250,14 @@ class ImageViewer(Frame):
         self.canvas.pack()
         self.resultsScrollbar.config(command=self.canvas.yview)
         self.canvas.create_text(100,10,fill="darkblue",font="Times 20 italic bold",
-                        text="Page " + str(page_num))
+                        text="Page " + str(self.current_page))
 
-        # your code
         # photo remain is the list of photos to be placed
         # each item in "photoRemain" is a tuple of the form
         # (filename, img)
         photoRemain = []
 
-        for photo_item in sortedTup:
+        for photo_item in self.page_images[self.current_page]:
             photo_file_name = photo_item[1]
             photo_image = photo_item[0]
             photoRemain.append((photo_file_name, photo_image))
