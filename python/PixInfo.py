@@ -177,3 +177,43 @@ class PixInfo:
 	# get the list of file names of the images
 	def get_file_list(self):
 		return self.fileList
+
+# Get relevant images
+# make seperate txt files that contain color code, intensity bins (whether from my code or read in from excel provided)
+
+# store normalized feature matrix in txt file
+# calculate rf
+
+# User picked images 3 and 10 as relevant to the query image. Returns [3, 10]
+# RF method takes that array as parameter
+ 
+ #calculate RF
+	# Start with the initial color code and intensity bins. 
+	# Take each number in each bin and divide by the total pixels (image size)
+	# Append columns (color code and intensity bins) together for our feature matrix
+	# Start feature normalization
+		# Calculate each column's average
+		# Calculate each column's standard deviation
+		# std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
+	#gaussian normalization
+		# new value of the cell = (each cell of the column - average of column) / standard deviation of column
+		# now we have normalized feature matrix!
+  
+  # Intial retrieval (using same weight for all features)
+  # e.g. query image 1
+  # lets calculate weighted distance between query img and all other imgs
+  # distance btwn img 1 and img 1 (to self) always 0
+  # distance (img 1, img 2) = (1/# of bins) * ( abs(img 1's feature 1 - img 2's feature 1) + abs(img 1's feature 2 - img 2's feature 2) .. do for rest of features )
+  
+  # Get relevant image feedback;
+  # get images selected as relevant into columns along with query image
+  # Calculate standard deviation of the column
+  # std formula above
+  # updated weight for each column  = 1/std of column
+  # normalized weight of column = updated weight of column / sum of all updated columns weights
+  # This new normalized weight of column is used in the weighted manhatten formula
+  # Compute distance = normalized weight of feature column x abs(img1's feature 1 - img2's feature 1) + do for rest of columns.. like above
+  # * Important!:
+  # Normalized feature matrix should remain the same. 
+  # If std and mean is 0, set weight to 0
+  # If std is 0 and mean is non-zero, then set std to half of minimum std.
