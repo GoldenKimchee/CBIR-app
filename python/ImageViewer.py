@@ -68,7 +68,7 @@ class ImageViewer(Frame):
 
         # Create Results frame.
         resultsFrame = Frame(self.resultWin)
-        resultsFrame.pack(side=BOTTOM)
+        resultsFrame.pack(side=TOP)
         self.canvas = Canvas(resultsFrame)
         self.resultsScrollbar = Scrollbar(resultsFrame)
         self.resultsScrollbar.pack(side=RIGHT, fill=Y)
@@ -105,15 +105,10 @@ class ImageViewer(Frame):
             command=lambda: self.find_distance(method='cc_and_i'))
         b3.grid(row=3, sticky=EW)
         
-        relevance_check = Checkbutton(controlFrame, 
-                                      text='Relevance', 
-                                      variable=self.check_var)
-        relevance_check.grid(row=4, sticky=W)
-        
         # Layout Preview.
         self.selectImg = Label(previewFrame,
             image=self.photoList[0])
-        self.selectImg.pack(fill='both')
+        self.selectImg.pack(fill=BOTH)
 
         # Initialize the canvas with dimensions equal to the
         # number of results.
@@ -140,6 +135,10 @@ class ImageViewer(Frame):
             padx = 10, width=10,
             command=lambda: self.next_page())
         next_button.pack(side=RIGHT)
+        
+        self.page_label = Label(resultsFrame, text="Page " + str(self.current_page + 1),
+                           font="Times 18 bold")
+        self.page_label.pack(padx=100)      
 
 
     # Event "listener" for listbox change.
@@ -153,11 +152,13 @@ class ImageViewer(Frame):
     def previous_page(self):
         if self.current_page > 0:
             self.current_page -= 1
+            self.page_label['text'] = "Page " + str(self.current_page + 1)
         self.update_results()
         
     def next_page(self):
         if self.current_page < 4: # change hard-coded 6 to be len(imgs/# of imgs per page) later..
             self.current_page += 1
+            self.page_label['text'] = "Page " + str(self.current_page + 1)
         self.update_results()
         
     # Find the Manhattan Distance of each image and return a
@@ -178,8 +179,6 @@ class ImageViewer(Frame):
             bins_to_compare = self.colorCode
         elif method == "intensity_method":
             bins_to_compare = self.intenCode
-
-        #print("bins to compare: " + str(bins_to_compare))
 
         # now apply the manhattan distance technique,
         # compute the distance between the chosen index image
@@ -237,7 +236,7 @@ class ImageViewer(Frame):
     def update_results(self):
 
         cols = int(math.ceil(math.sqrt(len(self.page_images[self.current_page]))))
-        fullsize = (0, 0, (self.xmax*cols), (self.ymax*cols))
+        fullsize = (0, 0, (self.xmax*cols), (self.ymax*(cols - 1)))
 
         # Initialize the canvas with dimensions equal to the
         # number of results.
@@ -249,8 +248,6 @@ class ImageViewer(Frame):
             scrollregion=fullsize)
         self.canvas.pack()
         self.resultsScrollbar.config(command=self.canvas.yview)
-        self.canvas.create_text(100,10,fill="darkblue",font="Times 20 italic bold",
-                        text="Page " + str(self.current_page))
 
         # photo remain is the list of photos to be placed
         # each item in "photoRemain" is a tuple of the form
@@ -301,7 +298,7 @@ if __name__ == '__main__':
     resultWin = Toplevel(root)
     resultWin.title('Result Viewer')
     resultWin.protocol('WM_DELETE_WINDOW', lambda: None)
-    resultWin.geometry("500x350")
+    resultWin.geometry("500x290")
 
     pixInfo = PixInfo(root)
 

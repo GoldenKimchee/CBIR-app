@@ -179,7 +179,6 @@ class PixInfo:
 		return self.fileList
 
 # Get relevant images
-# make seperate txt files that contain color code, intensity bins (whether from my code or read in from excel provided)
 
 # store normalized feature matrix in txt file
 # calculate rf
