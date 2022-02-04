@@ -23,6 +23,7 @@ class ImageViewer(Frame):
         self.image_sizes = self.pixInfo.get_image_sizes()
         self.check_var = 0
         self.current_page = 0
+        self.relevant_list = []
 
         # self.colorCode and self.intenCode are lists of bins
         # for each photo.
@@ -105,6 +106,14 @@ class ImageViewer(Frame):
             command=lambda: self.find_distance(method='cc_and_i'))
         b3.grid(row=3, sticky=EW)
         
+        self.relevant_text = StringVar()
+        self.relevance_textbox = Entry(controlFrame, textvariable=self.relevant_text)
+        self.relevance_textbox.grid(row=4, sticky=EW)
+        self.submit_relevant = Button(controlFrame, text="Submit relevant", padx = 10, width=20,
+            command=lambda: self.get_relevant())
+        self.submit_relevant.grid(row=5, sticky=EW)
+        
+        
         # Layout Preview.
         self.selectImg = Label(previewFrame,
             image=self.photoList[0])
@@ -115,11 +124,11 @@ class ImageViewer(Frame):
         fullsize = (0, 0, (self.xmax*50), (self.ymax*50))
         self.canvas.delete(ALL)
         self.canvas.config(
-            width=self.xmax*50,
-            height=self.ymax*50/2,
+            width=self.xmax*100,
+            height=self.ymax*100/2,
             yscrollcommand=self.resultsScrollbar.set,
             scrollregion=fullsize)
-        self.canvas.pack()
+        self.canvas.pack(fill='both')
         self.resultsScrollbar.config(command=self.canvas.yview)
 
         # array of tuples
@@ -140,6 +149,10 @@ class ImageViewer(Frame):
                            font="Times 18 bold")
         self.page_label.pack(padx=100)      
 
+    def get_relevant(self):
+        relevant = self.relevant_text.get()
+        self.relevant_list = relevant.split()
+        print(self.relevant_list)
 
     # Event "listener" for listbox change.
     def update_preview(self, event):
@@ -268,10 +281,11 @@ class ImageViewer(Frame):
             photoRemain = photoRemain[cols:]
             colPos = 0
             for (filename, img) in photoRow:
-                link = Button(self.canvas, image=img)
+                link = Button(self.canvas, image=img, text=filename)
                 handler = lambda f=filename: self.inspect_pic(f)
                 link.config(command=handler)
                 link.pack(side=LEFT, expand=YES)
+                
                 self.canvas.create_window(
                     colPos,
                     rowPos,
@@ -279,6 +293,9 @@ class ImageViewer(Frame):
                     window=link,
                     width=self.xmax,
                     height=self.ymax)
+
+                img_label = Label(link, text=filename[7:])
+                img_label.pack(side=BOTTOM)
                 colPos += self.xmax
 
             rowPos += self.ymax
@@ -287,8 +304,7 @@ class ImageViewer(Frame):
     # viewer.
     def inspect_pic(self, filename):
         os.startfile(filename)
-
-
+    
 # Executable section.
 if __name__ == '__main__':
 
