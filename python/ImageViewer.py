@@ -94,12 +94,12 @@ class ImageViewer(Frame):
         # Layout Controls.
         self.b1 = Button(controlFrame, text="Color-Code",
             padx = 10, width=10,
-            command=lambda: self.find_distance(method='color_code_method'))
+            command=lambda: self.find_distance(method='get_colorCode'))
         self.b1.grid(row=1, sticky=EW)
 
         b2 = Button(controlFrame, text="Intensity",
             padx = 10, width=10,
-            command=lambda: self.find_distance(method='intensity_method'))
+            command=lambda: self.find_distance(method='get_intenCode'))
         b2.grid(row=2, sticky=EW)
         
         b3 = Button(controlFrame, text="Color code & Intensity",

@@ -6,7 +6,7 @@ import glob, os, math
 
 # Pixel Info class.
 class PixInfo:
-
+	imageCount = 1
 	# Constructor.
 	def __init__(self, master):
 		self.master = master
@@ -15,8 +15,10 @@ class PixInfo:
 		self.imageSizes = []
 		self.xmax = 0
 		self.ymax = 0
-		self.colorCode = []
-		self.intenCode = []
+		color_row, color_col = 100, 64
+		self.colorCode = [[0 for r in range(color_row)] for y in range(color_col)]
+		int_row, int_col = 100, 26
+		self.intenCode = [[0 for r in range(int_row)] for y in range(int_col)]
 		self.fileList = []
 		self.binary_cache = dict()
 		self.color_cache = dict()
@@ -53,10 +55,47 @@ class PixInfo:
 			width, height = image.size
 
 			# Get histogram bins for each method.
-			CcBins, InBins = self.encode(image, width, height)
-			self.colorCode.append(CcBins)
-			self.intenCode.append(InBins)
+			self.readIntensityFile()
+			self.readColorCodeFile()
+   
+	def readIntensityFile(self): 
+		#open the file intensity.txt
+		#if file was not able to be opened, will print "file intensity.txt not found!"
+		try:
+			#empty string to store a line in the file thats going to be read
+			line = ""
+			intensityFile = open("intensity.txt", "r")
+			for i in range(0, 100):
+				line = intensityFile.readline()
+				l = line.split(",")
+				#loops through length
+				for j in range(len(l)):
+					self.intenCode[i][j] = l[j]
+				
 
+			intensityFile.close()
+		except IOError as e: 
+			print("file intensity.txt not found!")
+
+		#close file when done reading
+		
+	def readColorCodeFile(self):
+		#open the file colorCode.txt
+		#if file was not able to be opened, will print "file colorCode.txt not found!"
+		try:
+			#empty string to store a line in the file thats going to be read
+			line = ""
+			intensityFile = open("intensity.txt", "r")
+			for i in range(0, 100):
+				line = intensityFile.readline()
+				l = line.split(",")
+				#loops through lenghth
+				for j in range(len(l)):
+					self.colorCode[i][j] = l[j]
+			#close file when done using
+			intensityFile.close()
+		except IOError as e: 
+			print("file intensity.txt not found!")
 
 	# Bin function returns an array of bins for the image(given as an argument),
 	# both Intensity and Color-Code methods.
