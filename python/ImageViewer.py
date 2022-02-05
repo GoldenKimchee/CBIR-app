@@ -23,7 +23,8 @@ class ImageViewer(Frame):
         self.image_sizes = self.pixInfo.get_image_sizes()
         self.check_var = 0
         self.current_page = 0
-        self.relevant_list = []
+        # self.relevant_list = []
+        # self.counter = 0
 
         # self.colorCode and self.intenCode are lists of bins
         # for each photo.
@@ -112,6 +113,9 @@ class ImageViewer(Frame):
         self.submit_relevant = Button(controlFrame, text="Submit relevant", padx = 10, width=20,
             command=lambda: self.get_relevant())
         self.submit_relevant.grid(row=5, sticky=EW)
+        
+        # self.var = Checkbutton(controlFrame, text="Relevant", onvalue=1, offvalue=0)
+        # self.check_list = []
         
         
         # Layout Preview.
@@ -276,7 +280,6 @@ class ImageViewer(Frame):
         # by distance.  Buttons envoke the inspect_pic method.
         rowPos = 0
         while photoRemain:
-
             photoRow = photoRemain[:cols]
             photoRemain = photoRemain[cols:]
             colPos = 0
@@ -296,8 +299,13 @@ class ImageViewer(Frame):
 
                 img_label = Label(link, text=filename[7:])
                 img_label.pack(side=BOTTOM)
+            # if self.var.getint() == 1:
+            #     img_checkbox = Checkbutton(link, text="Relevant", variable=self.relevant_list[self.counter])
+            #     img_checkbox.pack(side=BOTTOM)
+            # else:
+            #     self.relevant_list.clear()
+            # self.counter += 1
                 colPos += self.xmax
-
             rowPos += self.ymax
 
     # Open the picture with the default operating system image
