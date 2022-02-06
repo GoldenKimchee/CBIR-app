@@ -2,6 +2,7 @@
 # Program to start evaluating an image in python
 from PIL import Image, ImageTk
 import glob, os, math
+import math
 
 
 # Pixel Info class.
@@ -22,6 +23,7 @@ class PixInfo:
 		self.fileList = []
 		self.binary_cache = dict()
 		self.color_cache = dict()
+		self.feature_matrix = []
 
 		# Add each image (for evaluation) into a list,
 		# and a Photo from the image (for the GUI) in a list.
@@ -54,9 +56,9 @@ class PixInfo:
 		for image in self.imageList[:]:
 			width, height = image.size
 
-			# Get histogram bins for each method.
-			self.readIntensityFile()
-			self.readColorCodeFile()
+		# Get histogram bins for each method.
+		self.readIntensityFile()
+		self.readColorCodeFile()
    
 	def readIntensityFile(self): 
 		#open the file intensity.txt
@@ -217,14 +219,89 @@ class PixInfo:
 	def get_file_list(self):
 		return self.fileList
 
-# Get relevant images
 
 # store normalized feature matrix in txt file
 # calculate rf
 
-# User picked images 3 and 10 as relevant to the query image. Returns [3, 10]
+#query img 1
+# User picked images 3 and 10 as relevant to the query image. Returns [1, 3, 10]
 # RF method takes that array as parameter
- 
+	def calculate_RF(self, relevant_imgs):
+		# Get all the bins since we will need to combine them
+		Cc_bins = self.get_colorCode()
+		Inten_bins = self.get_intenCode()
+		Img_sizes = self.get_image_sizes() # not sure if this function works
+		all_features = [] # this should hold feature matrixes of all images
+  
+		# Do for every relevant image
+		for image_number in relevant_imgs:
+			# Get the relevant img's bins
+			img_cc_bins = Cc_bins[image_number + 1]
+			img_inten_bins = Inten_bins[image_number + 1]
+			total_bins = img_cc_bins + img_inten_bins
+			feature_matrix = []
+   
+   			# Take each number in each bin and divide by the total pixels (image size)
+			for num in total_bins:
+				feature_matrix.append(num/Img_sizes[image_number + 1])
+    
+			all_features.append(feature_matrix)
+	
+ 	# Start feature normalization
+		# For creating a range of the number of relevant images
+		number_of_imgs = len(relevant_imgs)
+
+		column_avgs = []
+		# Calculate each column's average
+		for i in range(89): # go through each bin in column order
+			sum = 0
+			for j in range(number_of_imgs):
+				sum += all_features[j][i]
+			column_average = sum / number_of_imgs
+			column_avgs.append(column_average)
+   
+		# Calculate each column's standard deviation
+		column_stds = []
+		for i in range(89):
+			std_sum = 0
+			for j in range(number_of_imgs):
+				std_for_column = ((all_features[j][i] - column_avgs[i])**2)/number_of_imgs - 1
+				std_sum += std_for_column
+			column_std = math.sqrt(std_sum)
+			column_stds.append(column_std)
+		# std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
+
+		#gaussian normalization
+			for i in range(89):
+				for j in range(number_of_imgs):
+					all_features[j][i] = (all_features[j][i] - column_avgs[i])/column_stds[i]
+					# new value of the cell = (each cell of the column - average of column) / standard deviation of column
+			# now we have normalized feature matrix!
+  
+  # Intial retrieval (using same weight for all features)
+  # e.g. query image 1
+  # lets calculate weighted distance between query img and all other imgs
+  # distance btwn img 1 and img 1 (to self) always 0
+  # distance (img 1, img 2) = (1/# of bins) * ( abs(img 1's feature 1 - img 2's feature 1) + abs(img 1's feature 2 - img 2's feature 2) .. do for rest of features )
+  
+  # Get relevant image feedback;
+  # get images selected as relevant into columns along with query image
+  # Calculate standard deviation of the column
+  # std formula above
+  # updated weight for each column  = 1/std of column
+  # normalized weight of column = updated weight of column / sum of all updated columns weights
+  # This new normalized weight of column is used in the weighted manhatten formula
+  # Compute distance = normalized weight of feature column x abs(img1's feature 1 - img2's feature 1) + do for rest of columns.. like above
+  # * Important!:
+  # Normalized feature matrix should remain the same. 
+  # If std and mean is 0, set weight to 0
+  # If std is 0 and mean is non-zero, then set std to half of minimum std.
+  
+  
+  
+  
+  
+ ###############################################################################################################
  #calculate RF
 	# Start with the initial color code and intensity bins. 
 	# Take each number in each bin and divide by the total pixels (image size)
@@ -255,3 +332,4 @@ class PixInfo:
   # Normalized feature matrix should remain the same. 
   # If std and mean is 0, set weight to 0
   # If std is 0 and mean is non-zero, then set std to half of minimum std.
+  #####################################################################################################################################################
