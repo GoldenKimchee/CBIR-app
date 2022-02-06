@@ -18,11 +18,6 @@ class PixInfo:
     # keeps track of img count, starts at 1 just so it matches the img number in the file, will end at 100
     imageCount = 1
     # matrix that holds the bin values for intensity and colorcode
-    ##int_row, int_col = 100, 26
-    ## intensityMatrix = [[0 for r in range(int_row)] for y in range(int_col)]
-    ##color_row, color_col = 100, 64
-    ##colorMatrix = [[0 for r in range(color_row)] for y in range(color_col)]
-    ################################################################################
 
     # Constructor.
     def __init__(self, master):
