@@ -34,9 +34,9 @@ class PixInfo:
         self.ymax = 0
         # color code and intensity code matrix######################################
 
-        self.colorCode = []
+        self.colorCode = colorCodeMatrix
 
-        self.intenCode = []
+        self.intenCode = intensityMatrix
         ###########################################################################
         self.fileList = []
         self.binary_cache = dict()
