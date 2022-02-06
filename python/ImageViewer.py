@@ -4,6 +4,7 @@
 # Show the image with:
 #os.startfile(imageList[n].filename)
 
+
 from tkinter import *
 import math, os
 from PixInfo import PixInfo
@@ -11,6 +12,8 @@ import operator
 
 # Main app.
 class ImageViewer(Frame):
+    
+
 
     # Constructor.
     def __init__(self, master, pixInfo, resultWin):
@@ -177,6 +180,8 @@ class ImageViewer(Frame):
             self.current_page += 1
             self.page_label['text'] = "Page " + str(self.current_page + 1)
         self.update_results()
+    
+    
         
     # Find the Manhattan Distance of each image and return a
     # list of distances between image i and each image in the

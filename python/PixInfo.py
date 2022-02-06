@@ -207,9 +207,6 @@ class PixInfo:
 	def get_colorCode(self):
 		return self.colorCode
 
-	# get the list of intensity code bins for the images
-	def get_intenCode(self):
-		return self.intenCode
 
 	# get the list of image sizes
 	def get_image_sizes(self):
