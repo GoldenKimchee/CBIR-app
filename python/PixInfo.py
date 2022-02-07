@@ -28,6 +28,7 @@ class PixInfo:
         self.binary_cache = dict()
         self.color_cache = dict()
         self.feature_matrix = []
+        self.weights = []
 
         # Add each image (for evaluation) into a list,
         # and a Photo from the image (for the GUI) in a list.
@@ -63,6 +64,7 @@ class PixInfo:
         # Get histogram bins for each method.
         self.readIntensityFile()
         self.readColorCodeFile()
+        self.calculate_normalized_feat_matrix()
         print(self.get_colorCode())
 
     def readIntensityFile(self):
@@ -78,7 +80,7 @@ class PixInfo:
                 # loops through length
                 for j in range(len(l)):
                     intensityMatrix[i][j] = l[j]
-                    self.intenCode = intensityMatrix
+                self.intenCode = intensityMatrix
 
             intensityFile.close()
         except IOError as e:
@@ -98,7 +100,7 @@ class PixInfo:
                 # loops through lenghth
                 for j in range(len(l)):
                     colorCodeMatrix[i][j] = l[j]
-                    self.colorCode = colorCodeMatrix
+                self.colorCode = colorCodeMatrix
             # close file when done using
             intensityFile.close()
         except IOError as e:
@@ -229,62 +231,68 @@ class PixInfo:
 
     # query img 1
     # User picked images 3 and 10 as relevant to the query image. Returns [1, 3, 10]
-    # RF method takes that array as parameter
-    def calculate_RF(self, relevant_imgs):
+    # RF method creates normalized feature matrix
+    def calculate_normalized_feat_matrix(self):
         # Get all the bins since we will need to combine them
         Cc_bins = self.get_colorCode()
         Inten_bins = self.get_intenCode()
         Img_sizes = self.get_image_sizes()  # not sure if this function works
         all_features = []  # this should hold feature matrixes of all images
+        print("image sizes")
+        print(Img_sizes)
+        # # Do for every relevant image
+        # for image_number in range(89):
+        #     # Get the relevant img's bins
+        #     img_cc_bins = Cc_bins[image_number]
+        #     img_inten_bins = Inten_bins[image_number]
+        #     total_bins = img_cc_bins + img_inten_bins
+        #     feature_matrix = []
 
-        # Do for every relevant image
-        for image_number in relevant_imgs:
-            # Get the relevant img's bins
-            img_cc_bins = Cc_bins[image_number + 1]
-            img_inten_bins = Inten_bins[image_number + 1]
-            total_bins = img_cc_bins + img_inten_bins
-            feature_matrix = []
+        #     # Take each number in each bin and divide by the total pixels (image size)
+        #     for num in total_bins:
+        #         image_number = int(image_number)
+        #         feature_matrix.append(num / Img_sizes[image_number])
 
-            # Take each number in each bin and divide by the total pixels (image size)
-            for num in total_bins:
-                feature_matrix.append(num / Img_sizes[image_number + 1])
+        #     all_features.append(feature_matrix)
+        #     print(len(all_features))
+        # # Start feature normalization
 
-            all_features.append(feature_matrix)
+        # column_avgs = []
+        # # Calculate each column's average
+        # for i in range(89):  # go through each bin in column order
+        #     sum = 0
+        #     for j in range(100):
+        #         sum += all_features[j][i]
+        #     column_average = sum / 100
+        #     column_avgs.append(column_average)
 
-        # Start feature normalization
-        # For creating a range of the number of relevant images
-        number_of_imgs = len(relevant_imgs)
+        # # Calculate each column's standard deviation
+        # column_stds = []
+        # for i in range(89):
+        #     std_sum = 0
+        #     for j in range(100):
+        #         std_for_column = ((all_features[j][i] - column_avgs[i]) ** 2) / 100 - 1
+        #         std_sum += std_for_column
+        #     column_std = math.sqrt(std_sum)
+        #     column_stds.append(column_std)
+        #     # std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
 
-        column_avgs = []
-        # Calculate each column's average
-        for i in range(89):  # go through each bin in column order
-            sum = 0
-            for j in range(number_of_imgs):
-                sum += all_features[j][i]
-            column_average = sum / number_of_imgs
-            column_avgs.append(column_average)
-
-        # Calculate each column's standard deviation
-        column_stds = []
-        for i in range(89):
-            std_sum = 0
-            for j in range(number_of_imgs):
-                std_for_column = ((all_features[j][i] - column_avgs[i]) ** 2) / number_of_imgs - 1
-                std_sum += std_for_column
-            column_std = math.sqrt(std_sum)
-            column_stds.append(column_std)
-            # std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
-
-            # gaussian normalization
-            for i in range(89):
-                for j in range(number_of_imgs):
-                    all_features[j][i] = (all_features[j][i] - column_avgs[i]) / column_stds[i]
-                # new value of the cell = (each cell of the column - average of column) / standard deviation of column
-        # now we have normalized feature matrix!
+        #     # gaussian normalization
+        #     for i in range(89):
+        #         for j in range(100):
+        #             all_features[j][i] = (all_features[j][i] - column_avgs[i]) / column_stds[i]
+        #         # new value of the cell = (each cell of the column - average of column) / standard deviation of column
+        # # now we have normalized feature matrix!
+        # self.feature_matrix = all_features
     
-    def find_weighted_distance(self):
+    #Assume we have normalized feature matrix in self.feature_matrix
+    # query img 1
+    # User picked images 3 and 10 as relevant to the query image. relevant_imgs = [1, 3, 10]
+    #use self.weights, self.feature_matrix
+    def find_weighted_distance(self, relevant_imgs):
         pass
 # Intial retrieval (using same weight for all features)
+# initial weight is 1/N.. N = 89?
 # e.g. query image 1
 # lets calculate weighted distance between query img and all other imgs
 # distance btwn img 1 and img 1 (to self) always 0
