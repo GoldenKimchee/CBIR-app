@@ -1,8 +1,10 @@
 # PixInfo.py
 # Program to start evaluating an image in python
+import self
 from PIL import Image, ImageTk
 import glob, os, math
 import math
+import re
 
 int_row, int_col = 100, 26
 intensityMatrix = [[0 for r in range(int_col)] for y in range(int_row)]
@@ -74,15 +76,22 @@ class PixInfo:
             intensityFile = open("intensity.txt", "r")
             for i in range(0, 100):
                 line = intensityFile.readline()
-                l = line.split(",")
+                l = re.split(',', line)
                 # loops through length
                 for j in range(len(l)):
                     intensityMatrix[i][j] = l[j]
-                    self.intenCode = intensityMatrix
+                    if(j == len(l)-1):
+                        intensityMatrix[i][j] = l[j][0:len(l[j])-1]
+
+
 
             intensityFile.close()
+            self.intenCode = intensityMatrix
         except IOError as e:
             print("file intensity.txt not found!")
+
+    readIntensityFile(self)
+    print(intensityMatrix[0])
 
 
     def readColorCodeFile(self):
@@ -94,13 +103,16 @@ class PixInfo:
             intensityFile = open("intensity.txt", "r")
             for i in range(0, 100):
                 line = intensityFile.readline()
-                l = line.split(",")
+                l = re.split(', | \n', line)
                 # loops through lenghth
                 for j in range(len(l)):
                     colorCodeMatrix[i][j] = l[j]
-                    self.colorCode = colorCodeMatrix
+                    if (j == len(l) - 1):
+                        colorCodeMatrix[i][j] = l[j][0:len(l[j]) - 1]
+
             # close file when done using
             intensityFile.close()
+            self.colorCode = colorCodeMatrix
         except IOError as e:
             print("file intensity.txt not found!")
 
@@ -275,6 +287,7 @@ class PixInfo:
             column_stds.append(column_std)
             # std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
 
+            #find smallest standard deviation
             # gaussian normalization
             for i in range(89):
                 for j in range(number_of_imgs):
