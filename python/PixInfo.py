@@ -1,6 +1,5 @@
 # PixInfo.py
 # Program to start evaluating an image in python
-import self
 from PIL import Image, ImageTk
 import re
 import glob, os, math

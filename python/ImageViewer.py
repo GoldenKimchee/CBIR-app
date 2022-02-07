@@ -195,8 +195,12 @@ class ImageViewer(Frame):
         bins_to_compare = []
         if method == "color_code_method":
             bins_to_compare = self.colorCode
+            for i in range(89):
+                weights.append(1)
         elif method == "intensity_method":
             bins_to_compare = self.intenCode
+            for i in range(89):
+                weights.append(1)
         elif method == "inten_color_method":
             bins_to_compare = pixInfo.get_normalized_feature()
             for i in range(89):
