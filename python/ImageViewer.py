@@ -7,6 +7,7 @@
 
 from tkinter import *
 import math, os
+from turtle import bgcolor
 from PixInfo import PixInfo
 import operator
 
@@ -24,10 +25,6 @@ class ImageViewer(Frame):
         self.image_sizes = self.pixInfo.get_image_sizes()
         self.check_var = 0
         self.current_page = 0
-        # self.colorCode and self.intenCode are lists of bins
-        # for each photo.
-        # For example, self.colorCode[0] is the color code bin
-        # for the first image
         self.colorCode = pixInfo.get_colorCode()
         self.intenCode = pixInfo.get_intenCode()
 
@@ -46,7 +43,7 @@ class ImageViewer(Frame):
 
         # Create Main frame.
         mainFrame = Frame(master)
-        mainFrame.pack()
+        mainFrame.pack(fill=BOTH, expand=True)
 
         # Create Picture chooser frame.
         listFrame = Frame(mainFrame)
@@ -60,7 +57,9 @@ class ImageViewer(Frame):
         previewFrame = Frame(mainFrame,
                              width=self.xmax + 45, height=self.ymax)
         previewFrame.pack_propagate(0)
-        previewFrame.pack(side=RIGHT)
+        previewFrame.pack(fill=BOTH, expand=True)
+        previewFrame.grid_rowconfigure(0, weight=1)
+        previewFrame.grid_columnconfigure(0, weight=1)
 
         # Create Results frame.
         resultsFrame = Frame(self.resultWin)
@@ -116,8 +115,8 @@ class ImageViewer(Frame):
 
         # Layout Preview.
         self.selectImg = Label(previewFrame,
-                               image=self.photoList[0])
-        self.selectImg.pack(fill=BOTH)
+                               image=self.photoList[0], width=100)
+        self.selectImg.grid(sticky='nesw', column=0, row=0)
 
         # Initialize the canvas with dimensions equal to the
         # number of results.
@@ -151,6 +150,7 @@ class ImageViewer(Frame):
 
     def reset_weights(self):
         pixInfo.weights = [1/89] * 89
+        self.relevant_text.set('')
         
     def update_weights_procedure(self):
         raw_text = self.relevant_text.get()
