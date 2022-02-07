@@ -98,13 +98,18 @@ class ImageViewer(Frame):
                     padx=10, width=20,
                     command=lambda: self.find_distance(method="inten_color_method"))
         b3.grid(row=3, sticky=EW)
+        
+        b4 = Button(controlFrame, text="Reset relevance",
+                    padx=10, width=20,
+                    command=lambda: self.reset_weights())
+        b4.grid(row=4, sticky=EW)
 
         self.relevant_text = StringVar()
         self.relevance_textbox = Entry(controlFrame, textvariable=self.relevant_text)
-        self.relevance_textbox.grid(row=4, sticky=EW)
+        self.relevance_textbox.grid(row=5, sticky=EW)
         self.submit_relevant = Button(controlFrame, text="Submit relevant", padx=10, width=20,
                                       command=lambda: self.update_weights_procedure())
-        self.submit_relevant.grid(row=5, sticky=EW)
+        self.submit_relevant.grid(row=6, sticky=EW)
 
         # self.var = Checkbutton(controlFrame, text="Relevant", onvalue=1, offvalue=0)
         # self.check_list = []
@@ -144,6 +149,9 @@ class ImageViewer(Frame):
                                 font="Times 18 bold")
         self.page_label.pack(padx=100)
 
+    def reset_weights(self):
+        pixInfo.weights = [1/89] * 89
+        
     def update_weights_procedure(self):
         raw_text = self.relevant_text.get()
         str_list = raw_text.split(" ")
@@ -203,8 +211,6 @@ class ImageViewer(Frame):
                 weights.append(1)
         elif method == "inten_color_method":
             bins_to_compare = pixInfo.get_normalized_feature()
-            for i in range(89):
-                weights.append(1/89)
 
         # now apply the manhattan distance technique,
         # compute the distance between the chosen index image
@@ -227,12 +233,9 @@ class ImageViewer(Frame):
                 for j in range(len(chosen_image_bin)):
                     chosen_image_bin_value = chosen_image_bin[j]
                     other_image_bin_value = other_image_bin[j]
-                    weight = weights[j]
-                    manhattan_distance += weight * abs(chosen_image_bin_value / chosen_image_size
+                    manhattan_distance += pixInfo.weights[j] * abs(chosen_image_bin_value / chosen_image_size
                                                                    - other_image_bin_value / other_image_size)
 
-                    # manhattan_distance += pixInfo.weights[j] * abs(chosen_image_bin_value / chosen_image_size
-                    #                          - other_image_bin_value / other_image_size)
             # tuple of the form (image, image file name, manhattan distance)
             info = (other_image_img, other_image_file, manhattan_distance)
             image_info.append(info)
