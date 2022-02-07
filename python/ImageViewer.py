@@ -12,9 +12,6 @@ import operator
 
 # Main app.
 class ImageViewer(Frame):
-    
-
-
     # Constructor.
     def __init__(self, master, pixInfo, resultWin):
 
@@ -26,9 +23,6 @@ class ImageViewer(Frame):
         self.image_sizes = self.pixInfo.get_image_sizes()
         self.check_var = 0
         self.current_page = 0
-        # self.relevant_list = []
-        # self.counter = 0
-
         # self.colorCode and self.intenCode are lists of bins
         # for each photo.
         # For example, self.colorCode[0] is the color code bin
@@ -107,7 +101,7 @@ class ImageViewer(Frame):
         
         b3 = Button(controlFrame, text="Color code & Intensity",
             padx = 10, width=20,
-            command=lambda: self.find_distance(method='cc_and_i'))
+            command=lambda: self.find_weighted_distance())
         b3.grid(row=3, sticky=EW)
         
         self.relevant_text = StringVar()
@@ -159,7 +153,10 @@ class ImageViewer(Frame):
     def get_relevant(self):
         relevant = self.relevant_text.get()
         self.relevant_list = relevant.split()
-        print(self.relevant_list)
+        chosen_image_index = int(str(self.chosen_image)[7:]) - 1
+        self.relevant_list.insert(0, chosen_image_index)
+        int_array = [int(numeric_string) for numeric_string in relevant_list]
+        
 
     # Event "listener" for listbox change.
     def update_preview(self, event):
@@ -240,11 +237,10 @@ class ImageViewer(Frame):
         self.update_results()
 
         return image_info
-
+        
     # places image info(image file name, image) into the page buckets that they belong to
     # in "self.page_images"
     def put_sorted_images_in_pages_array(self, image_info):
-
         curr_index = 0
         for i in range(0, 5):
             page_image_info = []

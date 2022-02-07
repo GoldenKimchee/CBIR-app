@@ -1,6 +1,5 @@
 # PixInfo.py
 # Program to start evaluating an image in python
-import self
 from PIL import Image, ImageTk
 import glob, os, math
 import math
@@ -23,10 +22,8 @@ class PixInfo:
         self.imageSizes = []
         self.xmax = 0
         self.ymax = 0
-
-        self.colorCode = colorCodeMatrix
-
-        self.intenCode = intensityMatrix
+        self.colorCode = []
+        self.intenCode = []
         self.fileList = []
         self.binary_cache = dict()
         self.color_cache = dict()
@@ -66,6 +63,7 @@ class PixInfo:
         # Get histogram bins for each method.
         self.readIntensityFile()
         self.readColorCodeFile()
+        print(self.get_colorCode())
 
     def readIntensityFile(self):
         # open the file intensity.txt
@@ -80,16 +78,11 @@ class PixInfo:
                 # loops through length
                 for j in range(len(l)):
                     intensityMatrix[i][j] = l[j]
+                    self.intenCode = intensityMatrix
 
             intensityFile.close()
         except IOError as e:
             print("file intensity.txt not found!")
-
-    # close file when done reading
-    readIntensityFile(self)
-    print(intensityMatrix[0])
-    print(intensityMatrix[1])
-
 
 
     def readColorCodeFile(self):
@@ -105,6 +98,7 @@ class PixInfo:
                 # loops through lenghth
                 for j in range(len(l)):
                     colorCodeMatrix[i][j] = l[j]
+                    self.colorCode = colorCodeMatrix
             # close file when done using
             intensityFile.close()
         except IOError as e:
@@ -215,6 +209,10 @@ class PixInfo:
     # get the list of color code bins for the images
     def get_colorCode(self):
         return self.colorCode
+    
+    # get the list of intensity bins for the images
+    def get_intenCode(self):
+        return self.intenCode
 
     # get the list of image sizes
     def get_image_sizes(self):
@@ -224,6 +222,8 @@ class PixInfo:
     def get_file_list(self):
         return self.fileList
 
+    def cc_and_i(self):
+        pass
     # store normalized feature matrix in txt file
     # calculate rf
 
@@ -281,7 +281,9 @@ class PixInfo:
                     all_features[j][i] = (all_features[j][i] - column_avgs[i]) / column_stds[i]
                 # new value of the cell = (each cell of the column - average of column) / standard deviation of column
         # now we have normalized feature matrix!
-
+    
+    def find_weighted_distance(self):
+        pass
 # Intial retrieval (using same weight for all features)
 # e.g. query image 1
 # lets calculate weighted distance between query img and all other imgs
