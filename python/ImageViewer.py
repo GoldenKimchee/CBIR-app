@@ -2,13 +2,14 @@
 # Program to start evaluating an image in python
 #
 # Show the image with:
-#os.startfile(imageList[n].filename)
+# os.startfile(imageList[n].filename)
 
 
 from tkinter import *
 import math, os
 from PixInfo import PixInfo
 import operator
+
 
 # Main app.
 class ImageViewer(Frame):
@@ -17,8 +18,8 @@ class ImageViewer(Frame):
 
         Frame.__init__(self, master)
         self.chosen_image = " "
-        self.master    = master
-        self.pixInfo   = pixInfo
+        self.master = master
+        self.pixInfo = pixInfo
         self.resultWin = resultWin
         self.image_sizes = self.pixInfo.get_image_sizes()
         self.check_var = 0
@@ -47,23 +48,19 @@ class ImageViewer(Frame):
         mainFrame = Frame(master)
         mainFrame.pack()
 
-
         # Create Picture chooser frame.
         listFrame = Frame(mainFrame)
         listFrame.pack(side=LEFT)
-
 
         # Create Control frame.
         controlFrame = Frame(mainFrame)
         controlFrame.pack(side=RIGHT)
 
-
         # Create Preview frame.
         previewFrame = Frame(mainFrame,
-            width=self.xmax+45, height=self.ymax)
+                             width=self.xmax + 45, height=self.ymax)
         previewFrame.pack_propagate(0)
         previewFrame.pack(side=RIGHT)
-
 
         # Create Results frame.
         resultsFrame = Frame(self.resultWin)
@@ -72,14 +69,13 @@ class ImageViewer(Frame):
         self.resultsScrollbar = Scrollbar(resultsFrame)
         self.resultsScrollbar.pack(side=RIGHT, fill=Y)
 
-
         # Layout Picture Listbox.
         self.listScrollbar = Scrollbar(listFrame)
         self.listScrollbar.pack(side=RIGHT, fill=Y)
         self.list = Listbox(listFrame,
-            yscrollcommand=self.listScrollbar.set,
-            selectmode=BROWSE,
-            height=10)
+                            yscrollcommand=self.listScrollbar.set,
+                            selectmode=BROWSE,
+                            height=10)
         for i in range(len(self.imageList)):
             self.list.insert(i, "Image " + str(i + 1))
         self.list.pack(side=LEFT, fill=BOTH)
@@ -87,46 +83,44 @@ class ImageViewer(Frame):
         self.list.bind('<<ListboxSelect>>', self.update_preview)
         self.listScrollbar.config(command=self.list.yview)
 
-
         # Layout Controls.
         self.b1 = Button(controlFrame, text="Color-Code",
-            padx = 10, width=10,
-            command=lambda: self.find_distance(method='get_colorCode'))
+                         padx=10, width=10,
+                         command=lambda: self.find_distance(method='color_code_method'))
         self.b1.grid(row=1, sticky=EW)
 
         b2 = Button(controlFrame, text="Intensity",
-            padx = 10, width=10,
-            command=lambda: self.find_distance(method='get_intenCode'))
+                    padx=10, width=10,
+                    command=lambda: self.find_distance(method='intensity_method'))
         b2.grid(row=2, sticky=EW)
-        
+
         b3 = Button(controlFrame, text="Color code & Intensity",
-            padx = 10, width=20,
-            command=lambda: self.find_weighted_distance())
+                    padx=10, width=20,
+                    command=lambda: self.find_distance(method="inten_color_method"))
         b3.grid(row=3, sticky=EW)
-        
+
         self.relevant_text = StringVar()
         self.relevance_textbox = Entry(controlFrame, textvariable=self.relevant_text)
         self.relevance_textbox.grid(row=4, sticky=EW)
-        self.submit_relevant = Button(controlFrame, text="Submit relevant", padx = 10, width=20,
-            command=lambda: self.get_relevant())
+        self.submit_relevant = Button(controlFrame, text="Submit relevant", padx=10, width=20,
+                                      command=lambda: self.update_weights_procedure())
         self.submit_relevant.grid(row=5, sticky=EW)
-        
+
         # self.var = Checkbutton(controlFrame, text="Relevant", onvalue=1, offvalue=0)
         # self.check_list = []
-        
-        
+
         # Layout Preview.
         self.selectImg = Label(previewFrame,
-            image=self.photoList[0])
+                               image=self.photoList[0])
         self.selectImg.pack(fill=BOTH)
 
         # Initialize the canvas with dimensions equal to the
         # number of results.
-        fullsize = (0, 0, (self.xmax*50), (self.ymax*50))
+        fullsize = (0, 0, (self.xmax * 50), (self.ymax * 50))
         self.canvas.delete(ALL)
         self.canvas.config(
-            width=self.xmax*100,
-            height=self.ymax*100/2,
+            width=self.xmax * 100,
+            height=self.ymax * 100 / 2,
             yscrollcommand=self.resultsScrollbar.set,
             scrollregion=fullsize)
         self.canvas.pack(fill='both')
@@ -137,18 +131,26 @@ class ImageViewer(Frame):
 
         # buttons for the pages
         previous_button = Button(resultsFrame, text="Previous page",
-            padx = 10, width=10,
-            command=lambda: self.previous_page())
+                                 padx=10, width=10,
+                                 command=lambda: self.previous_page())
         previous_button.pack(side=LEFT)
 
         next_button = Button(resultsFrame, text="Next page",
-            padx = 10, width=10,
-            command=lambda: self.next_page())
+                             padx=10, width=10,
+                             command=lambda: self.next_page())
         next_button.pack(side=RIGHT)
-        
+
         self.page_label = Label(resultsFrame, text="Page " + str(self.current_page + 1),
-                           font="Times 18 bold")
-        self.page_label.pack(padx=100)      
+                                font="Times 18 bold")
+        self.page_label.pack(padx=100)
+
+    def update_weights_procedure(self):
+        raw_text = self.relevant_text.get()
+        str_list = raw_text.split(" ")
+        query_img_number = int(str(self.chosen_image)[7:])
+        relevant_list = [int(i) for i in str_list if i != '']
+        relevant_list.insert(0, query_img_number)
+        pixInfo.update_weights(relevant_imgs=relevant_list)
 
     def get_relevant(self):
         relevant = self.relevant_text.get()
@@ -156,7 +158,6 @@ class ImageViewer(Frame):
         chosen_image_index = int(str(self.chosen_image)[7:]) - 1
         self.relevant_list.insert(0, chosen_image_index)
         int_array = [int(numeric_string) for numeric_string in relevant_list]
-        
 
     # Event "listener" for listbox change.
     def update_preview(self, event):
@@ -171,15 +172,13 @@ class ImageViewer(Frame):
             self.current_page -= 1
             self.page_label['text'] = "Page " + str(self.current_page + 1)
         self.update_results()
-        
+
     def next_page(self):
-        if self.current_page < 4: # change hard-coded 6 to be len(imgs/# of imgs per page) later..
+        if self.current_page < 4:  # change hard-coded 6 to be len(imgs/# of imgs per page) later..
             self.current_page += 1
             self.page_label['text'] = "Page " + str(self.current_page + 1)
         self.update_results()
-    
-    
-        
+
     # Find the Manhattan Distance of each image and return a
     # list of distances between image i and each image in the
     # directory uses, the comparison method of the passed
@@ -192,43 +191,46 @@ class ImageViewer(Frame):
         # "chosen_image_index" is the index of the chosen image in the
         # image list
         chosen_image_index = int(str(self.chosen_image)[7:]) - 1
-
+        weights = []
         bins_to_compare = []
         if method == "color_code_method":
             bins_to_compare = self.colorCode
         elif method == "intensity_method":
             bins_to_compare = self.intenCode
+        elif method == "inten_color_method":
+            bins_to_compare = pixInfo.get_normalized_feature()
+            for i in range(89):
+                weights.append(1/89)
 
         # now apply the manhattan distance technique,
         # compute the distance between the chosen index image
         # and all other images
         chosen_image_bin = bins_to_compare[chosen_image_index]
 
-        #print("chosen image bin: " + str(chosen_image_bin))
+        # print("chosen image bin: " + str(chosen_image_bin))
         image_info = []
         for i in range(len(bins_to_compare)):
-
             other_image_bin = bins_to_compare[i]
             other_image_img = self.photoList[i]
-            other_image_file = self.fileList[i]
+            other_image_file = self.fileList[i] # all the images file name
 
             manhattan_distance = 0
-
             if (i != chosen_image_index):
                 chosen_image_size = self.image_sizes[chosen_image_index]
                 other_image_size = self.image_sizes[i]
 
                 # iterate through the items in each bin
-                for j in range(1, len(chosen_image_bin)):
+                for j in range(len(chosen_image_bin)):
                     chosen_image_bin_value = chosen_image_bin[j]
                     other_image_bin_value = other_image_bin[j]
+                    weight = weights[j]
+                    manhattan_distance += weight * abs(chosen_image_bin_value / chosen_image_size
+                                                                   - other_image_bin_value / other_image_size)
 
-                    manhattan_distance += abs(chosen_image_bin_value / chosen_image_size
-                    - other_image_bin_value / other_image_size)
-
+                    # manhattan_distance += pixInfo.weights[j] * abs(chosen_image_bin_value / chosen_image_size
+                    #                          - other_image_bin_value / other_image_size)
             # tuple of the form (image, image file name, manhattan distance)
             info = (other_image_img, other_image_file, manhattan_distance)
-
             image_info.append(info)
 
         # sort the image info by their manhattan distances
@@ -237,7 +239,7 @@ class ImageViewer(Frame):
         self.update_results()
 
         return image_info
-        
+
     # places image info(image file name, image) into the page buckets that they belong to
     # in "self.page_images"
     def put_sorted_images_in_pages_array(self, image_info):
@@ -249,19 +251,18 @@ class ImageViewer(Frame):
                 curr_index += 1
             self.page_images[i] = (page_image_info)
 
-
     # Update the results window with the sorted results.
     def update_results(self):
 
         cols = int(math.ceil(math.sqrt(len(self.page_images[self.current_page]))))
-        fullsize = (0, 0, (self.xmax*cols), (self.ymax*(cols - 1)))
+        fullsize = (0, 0, (self.xmax * cols), (self.ymax * (cols - 1)))
 
         # Initialize the canvas with dimensions equal to the
         # number of results.
         self.canvas.delete(ALL)
         self.canvas.config(
-            width=self.xmax*cols,
-            height=self.ymax*cols/2,
+            width=self.xmax * cols,
+            height=self.ymax * cols / 2,
             yscrollcommand=self.resultsScrollbar.set,
             scrollregion=fullsize)
         self.canvas.pack()
@@ -289,7 +290,7 @@ class ImageViewer(Frame):
                 handler = lambda f=filename: self.inspect_pic(f)
                 link.config(command=handler)
                 link.pack(side=LEFT, expand=YES)
-                
+
                 self.canvas.create_window(
                     colPos,
                     rowPos,
@@ -300,12 +301,12 @@ class ImageViewer(Frame):
 
                 img_label = Label(link, text=filename[7:])
                 img_label.pack(side=BOTTOM)
-            # if self.var.getint() == 1:
-            #     img_checkbox = Checkbutton(link, text="Relevant", variable=self.relevant_list[self.counter])
-            #     img_checkbox.pack(side=BOTTOM)
-            # else:
-            #     self.relevant_list.clear()
-            # self.counter += 1
+                # if self.var.getint() == 1:
+                #     img_checkbox = Checkbutton(link, text="Relevant", variable=self.relevant_list[self.counter])
+                #     img_checkbox.pack(side=BOTTOM)
+                # else:
+                #     self.relevant_list.clear()
+                # self.counter += 1
                 colPos += self.xmax
             rowPos += self.ymax
 
@@ -313,10 +314,10 @@ class ImageViewer(Frame):
     # viewer.
     def inspect_pic(self, filename):
         os.startfile(filename)
-    
+
+
 # Executable section.
 if __name__ == '__main__':
-
     root = Tk()
     root.title('Image Analysis Tool')
 
@@ -330,4 +331,3 @@ if __name__ == '__main__':
     imageViewer = ImageViewer(root, pixInfo, resultWin)
 
     root.mainloop()
-
