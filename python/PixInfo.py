@@ -1,6 +1,7 @@
 # PixInfo.py
 # Program to start evaluating an image in python
 from PIL import Image, ImageTk
+import re
 import glob, os, math
 import math
 
@@ -20,6 +21,7 @@ class PixInfo:
         self.imageList = []
         self.photoList = []
         self.imageSizes = []
+        self.imgTrueSizes = []
         self.xmax = 0
         self.ymax = 0
         self.colorCode = []
@@ -29,6 +31,8 @@ class PixInfo:
         self.color_cache = dict()
         self.feature_matrix = []
         self.weights = []
+        self.column_avgs = []
+        self.column_stds = []
 
         # Add each image (for evaluation) into a list,
         # and a Photo from the image (for the GUI) in a list.
@@ -64,9 +68,14 @@ class PixInfo:
         # Get histogram bins for each method.
         self.readIntensityFile()
         self.readColorCodeFile()
+        print(self.colorCode)
+        self.get_image_true_sizes()
         self.calculate_normalized_feat_matrix()
-        print(self.get_colorCode())
 
+    def get_image_true_sizes(self):
+        for i in range(len(self.intenCode)):
+            self.imgTrueSizes.append(self.intenCode[i][0])
+    
     def readIntensityFile(self):
         # open the file intensity.txt
         # if file was not able to be opened, will print "file intensity.txt not found!"
@@ -76,13 +85,15 @@ class PixInfo:
             intensityFile = open("intensity.txt", "r")
             for i in range(0, 100):
                 line = intensityFile.readline()
-                l = line.split(",")
+                l = re.split(',', line)
                 # loops through length
                 for j in range(len(l)):
                     intensityMatrix[i][j] = l[j]
-                self.intenCode = intensityMatrix
+                    if(j == len(l)-1):
+                        intensityMatrix[i][j] = float(l[j][0:len(l[j])-1])
 
             intensityFile.close()
+            self.intenCode = intensityMatrix
         except IOError as e:
             print("file intensity.txt not found!")
 
@@ -96,16 +107,19 @@ class PixInfo:
             intensityFile = open("intensity.txt", "r")
             for i in range(0, 100):
                 line = intensityFile.readline()
-                l = line.split(",")
+                l = re.split(',', line)
                 # loops through lenghth
                 for j in range(len(l)):
                     colorCodeMatrix[i][j] = l[j]
-                self.colorCode = colorCodeMatrix
+                    if (j == len(l) - 1):
+                        colorCodeMatrix[i][j] = float(l[j][0:len(l[j]) - 1])
+
             # close file when done using
             intensityFile.close()
+            self.colorCode = colorCodeMatrix
         except IOError as e:
             print("file intensity.txt not found!")
-
+            
     # Bin function returns an array of bins for the image(given as an argument),
     # both Intensity and Color-Code methods.
     def encode(self, image, width, height):
@@ -236,54 +250,51 @@ class PixInfo:
         # Get all the bins since we will need to combine them
         Cc_bins = self.get_colorCode()
         Inten_bins = self.get_intenCode()
-        Img_sizes = self.get_image_sizes()  # not sure if this function works
         all_features = []  # this should hold feature matrixes of all images
-        print("image sizes")
-        print(Img_sizes)
-        # # Do for every relevant image
-        # for image_number in range(89):
-        #     # Get the relevant img's bins
-        #     img_cc_bins = Cc_bins[image_number]
-        #     img_inten_bins = Inten_bins[image_number]
-        #     total_bins = img_cc_bins + img_inten_bins
-        #     feature_matrix = []
+        
+        for image_number in range(100):
+            # Get the relevant img's bins
+            img_cc_bins = Cc_bins[image_number]
+            img_inten_bins = Inten_bins[image_number]
+            total_bins = img_cc_bins + img_inten_bins
+            feature_matrix = []
 
-        #     # Take each number in each bin and divide by the total pixels (image size)
-        #     for num in total_bins:
-        #         image_number = int(image_number)
-        #         feature_matrix.append(num / Img_sizes[image_number])
+            # Take each number in each bin and divide by the total pixels (image size)
+            for num in total_bins:
+                feature_matrix.append(num / self.imgTrueSizes[image_number])
 
-        #     all_features.append(feature_matrix)
-        #     print(len(all_features))
-        # # Start feature normalization
+            all_features.append(feature_matrix)
+            
+        # Start feature normalization
+        column_avgs = [] # average of each column (index 0 number is the average of first column)
+        # Calculate each column's average
+        for i in range(89):  # go through each bin in column order
+            sum = 0
+            for j in range(100):
+                sum += all_features[j][i]
+            column_average = sum / 100
+            column_avgs.append(column_average)
+        self.column_avgs = column_avgs
 
-        # column_avgs = []
-        # # Calculate each column's average
-        # for i in range(89):  # go through each bin in column order
-        #     sum = 0
-        #     for j in range(100):
-        #         sum += all_features[j][i]
-        #     column_average = sum / 100
-        #     column_avgs.append(column_average)
-
-        # # Calculate each column's standard deviation
-        # column_stds = []
-        # for i in range(89):
-        #     std_sum = 0
-        #     for j in range(100):
-        #         std_for_column = ((all_features[j][i] - column_avgs[i]) ** 2) / 100 - 1
-        #         std_sum += std_for_column
-        #     column_std = math.sqrt(std_sum)
-        #     column_stds.append(column_std)
-        #     # std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
-
-        #     # gaussian normalization
-        #     for i in range(89):
-        #         for j in range(100):
-        #             all_features[j][i] = (all_features[j][i] - column_avgs[i]) / column_stds[i]
-        #         # new value of the cell = (each cell of the column - average of column) / standard deviation of column
-        # # now we have normalized feature matrix!
-        # self.feature_matrix = all_features
+        # Calculate each column's standard deviation
+        column_stds = [] # standard deviation for each column (index 0 number is std of first column)
+        for i in range(89):
+            std_sum = 0
+            for j in range(100):
+                std_for_column = ((all_features[j][i] - column_avgs[i]) ** 2) / 100 - 1
+                std_sum += std_for_column
+            column_std = math.sqrt(std_sum)
+            column_stds.append(column_std)
+            # std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
+        self.column_stds = column_stds
+        
+        # gaussian normalization
+        for i in range(89):
+            for j in range(100):
+                all_features[j][i] = (all_features[j][i] - column_avgs[i]) / column_stds[i]
+            # new value of the cell = (each cell of the column - average of column) / standard deviation of column
+        # now we have normalized feature matrix!
+        self.feature_matrix = all_features
     
     #Assume we have normalized feature matrix in self.feature_matrix
     # query img 1
