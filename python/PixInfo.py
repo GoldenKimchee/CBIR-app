@@ -68,6 +68,7 @@ class PixInfo:
         # Get histogram bins for each method.
         self.readIntensityFile()
         self.readColorCodeFile()
+        self.turnToInt()
         print(self.colorCode)
         self.get_image_true_sizes()
         self.calculate_normalized_feat_matrix()
@@ -119,7 +120,13 @@ class PixInfo:
             self.colorCode = colorCodeMatrix
         except IOError as e:
             print("file intensity.txt not found!")
-            
+    
+    def turnToInt(self):
+        for i in range(len(self.colorCode)):
+            self.colorCode[i] = [int(float(j)) for j in self.colorCode[i]]
+        for i in range(len(self.intenCode)):
+            self.intenCode[i] = [int(float(j)) for j in self.intenCode[i]]
+        
     # Bin function returns an array of bins for the image(given as an argument),
     # both Intensity and Color-Code methods.
     def encode(self, image, width, height):
@@ -283,7 +290,7 @@ class PixInfo:
             for j in range(100):
                 std_for_column = ((all_features[j][i] - column_avgs[i]) ** 2) / 100 - 1
                 std_sum += std_for_column
-            column_std = math.sqrt(std_sum)
+            column_std = std_sum**0.5  # column_std = math.sqrt(std_sum)
             column_stds.append(column_std)
             # std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
         self.column_stds = column_stds
@@ -300,7 +307,22 @@ class PixInfo:
     # query img 1
     # User picked images 3 and 10 as relevant to the query image. relevant_imgs = [1, 3, 10]
     #use self.weights, self.feature_matrix
-    def find_weighted_distance(self, relevant_imgs):
+    def find_weighted_distance(self):
+        for i in range(len(self.column_stds)):
+            if(self.column_stds[i] == 0 and self.column_avgs[i] != 0):
+                self.column_stds[i] = (1/2) * min(self.column_stds)
+
+        weightSum = 0
+        for i in range(len(self.weights)):
+            if(self.column_stds[i] != 0):
+                self.weights[i] = 1/self.column_stds[i]
+                weightSum += self.weights[i]
+            else:
+                self.weights[i] = 0
+        for i in range(len(self.weights)):  
+            self.weights[i] = self.weights[i]/weightSum
+            
+    def update_weights(self, relevant_imgs):
         pass
 # Intial retrieval (using same weight for all features)
 # initial weight is 1/N.. N = 89?

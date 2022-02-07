@@ -101,14 +101,14 @@ class ImageViewer(Frame):
         
         b3 = Button(controlFrame, text="Color code & Intensity",
             padx = 10, width=20,
-            command=lambda: self.find_weighted_distance())
+            command=lambda: pixInfo.find_weighted_distance())
         b3.grid(row=3, sticky=EW)
         
         self.relevant_text = StringVar()
         self.relevance_textbox = Entry(controlFrame, textvariable=self.relevant_text)
         self.relevance_textbox.grid(row=4, sticky=EW)
         self.submit_relevant = Button(controlFrame, text="Submit relevant", padx = 10, width=20,
-            command=lambda: self.get_relevant())
+            command=lambda: self.update_weights_procedure())
         self.submit_relevant.grid(row=5, sticky=EW)
         
         # self.var = Checkbutton(controlFrame, text="Relevant", onvalue=1, offvalue=0)
@@ -148,8 +148,17 @@ class ImageViewer(Frame):
         
         self.page_label = Label(resultsFrame, text="Page " + str(self.current_page + 1),
                            font="Times 18 bold")
-        self.page_label.pack(padx=100)      
+        self.page_label.pack(padx=100)
 
+    def update_weights_procedure(self):
+        raw_text = self.relevant_text.get()
+        str_list = raw_text.split(" ")
+        query_img_number = int(str(self.chosen_image)[7:])
+        relevant_list = [int(i) for i in str_list if i != '']
+        relevant_list.insert(0, query_img_number)
+        print(relevant_list)
+        pixInfo.update_weights(relevant_imgs=relevant_list)        
+        
     def get_relevant(self):
         relevant = self.relevant_text.get()
         self.relevant_list = relevant.split()
