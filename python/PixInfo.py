@@ -307,28 +307,55 @@ class PixInfo:
     def get_normalized_feature(self):
         return self.feature_matrix
 
-    # Assume we have normalized feature matrix in self.feature_matrix
-    # query img 1
-    # User picked images 3 and 10 as relevant to the query image. relevant_imgs = [1, 3, 10]
-    # use self.weights, self.feature_matrix
-    def find_weighted_distance(self):
-
-        for i in range(len(self.column_stds)):
-            if (self.column_stds[i] == 0 and self.column_avgs[i] != 0):
-                self.column_stds[i] = (1 / 2) * min(self.column_stds)
-
-        weightSum = 0
-        for i in range(len(self.weights)):
-            if (self.column_stds[i] != 0):
-                self.weights[i] = 1 / self.column_stds[i]
-                weightSum += self.weights[i]
-            else:
-                self.weights[i] = 0
-        for i in range(len(self.weights)):
-            self.weights[i] = self.weights[i] / weightSum
-
     def update_weights(self, relevant_imgs):
-        pass
+        # get images selected as relevant into columns along with query image
+        relevant_matrix = []
+        for relevant_img in relevant_imgs:
+            relevant_matrix.append(self.feature_matrix[relevant_img])
+            
+        column_avgs = []  # average of each column
+        # Calculate each column's average
+        for i in range(89):  # go through each bin in column order
+            sum = 0
+            for j in range(len(relevant_matrix)):
+                sum += relevant_matrix[j][i]
+            column_average = sum / 100
+            column_avgs.append(column_average)
+            
+        # Calculate each column's standard deviation
+        column_stds = []  # standard deviation for each column
+        for i in range(89):
+            std_sum = 0
+            for j in range(len(relevant_matrix)):
+                std_for_column = ((relevant_matrix[j][i] - column_avgs[i]) ** 2) / (100 - 1)
+                std_sum += std_for_column
+            column_std = std_sum ** 0.5  # column_std = math.sqrt(std_sum)
+            column_stds.append(column_std)
+            # std = square root of ( ( (each column's cell number - column's average)^2 / total number of cells in column ) + do for the rest.. its summation )
+        
+        updated_weights = []
+                        
+        sum_of_cols = 0
+        # updated weight for each column  = 1/std of column
+        for i in range(89):
+            if column_stds[i] == 0:
+                if column_avgs[i] == 0:
+                    weight = 0
+                else:
+                    column_stds[i] == (1/2) * (min(column_stds))
+                    weight = 1/column_stds[i]
+            else:
+                weight = 1/column_stds[i]
+            sum_of_cols += weight
+            updated_weights.append(weight)
+            
+        self.weights.clear()
+        # normalized weight of column = updated weight of column / sum of all updated columns weights
+        print(updated_weights)
+        for i in range(89):
+            self.weights.append(updated_weights[i]/sum_of_cols)
+        print(self.weights)
+            
 # Intial retrieval (using same weight for all features)
 # initial weight is 1/N.. N = 89?
 # e.g. query image 1

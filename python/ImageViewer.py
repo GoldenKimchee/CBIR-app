@@ -228,7 +228,6 @@ class ImageViewer(Frame):
             if (i != chosen_image_index):
                 chosen_image_size = self.image_sizes[chosen_image_index]
                 other_image_size = self.image_sizes[i]
-
                 # iterate through the items in each bin
                 for j in range(len(chosen_image_bin)):
                     chosen_image_bin_value = chosen_image_bin[j]
