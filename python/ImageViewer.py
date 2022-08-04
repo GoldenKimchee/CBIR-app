@@ -7,9 +7,7 @@
 
 from tkinter import *
 import math, os
-from turtle import bgcolor
-from PixInfo import PixInfo
-import operator
+import PixInfo
 
 
 # Main app.

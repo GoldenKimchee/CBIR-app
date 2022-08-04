@@ -1,9 +1,8 @@
 # PixInfo.py
 # Program to start evaluating an image in python
 from PIL import Image, ImageTk
-import re
-import glob, os, math
-import math
+import glob, os, re
+import numpy as np
 
 intensityMatrix = []
 colorCodeMatrix = []
@@ -154,8 +153,7 @@ class PixInfo:
 
                 r, g, b = im.getpixel((x, y))  # in every pixel of a 'x' pixel wide 'y' pixel tall image.
                 intensity = (0.299 * r) + (0.587 * g) + (0.114 * b)
-                bin = int((
-                                  intensity + 10) // 10)  # Division rounds down to bin number.. in this case bins will range 0-24 (25 bins).
+                bin = int((intensity + 10) // 10)  # Division rounds down to bin number.. in this case bins will range 0-24 (25 bins).
 
                 if bin == 26:  # last bin is 240 to 255, so bin of 24 and 25 will
                     bin = 25  # correspond to bin 24, BUT +1 since first index stores total pixels.
