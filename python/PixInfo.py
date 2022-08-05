@@ -349,10 +349,8 @@ class PixInfo:
             
         self.weights.clear()
         # normalized weight of column = updated weight of column / sum of all updated columns weights
-        print(updated_weights)
         for i in range(89):
             self.weights.append(updated_weights[i]/sum_of_cols)
-        print(self.weights)
             
 # Intial retrieval (using same weight for all features)
 # initial weight is 1/N.. N = 89?

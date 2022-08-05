@@ -7,7 +7,7 @@
 
 from tkinter import *
 import math, os
-import PixInfo
+from PixInfo import PixInfo
 
 
 # Main app.
@@ -215,7 +215,6 @@ class ImageViewer(Frame):
         # and all other images
         chosen_image_bin = bins_to_compare[chosen_image_index]
 
-        # print("chosen image bin: " + str(chosen_image_bin))
         image_info = []
         for i in range(len(bins_to_compare)):
             other_image_bin = bins_to_compare[i]
