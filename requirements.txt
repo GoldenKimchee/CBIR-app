@@ -1,7 +1,2 @@
-tkinter
-math
-os
-PIL
-re
-glob
+Pillow
 numpy
